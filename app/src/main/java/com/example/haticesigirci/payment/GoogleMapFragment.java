@@ -1,6 +1,7 @@
 package com.example.haticesigirci.payment;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -26,12 +27,12 @@ import com.directions.route.RoutingListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -46,7 +47,7 @@ import java.util.List;
 /**
  * Created by haticesigirci on 27/08/16.
  */
-public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks,
+public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, RoutingListener {
 
     // The minimum distance to change Updates in meters
@@ -59,8 +60,8 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
 
     private boolean mRequestingLocationUpdates;  //use as a flag need research
     Location location;// location
-    LocationManager locationManager;
-    LocationListener locationListener;
+    // LocationManager locationManager;
+    // LocationListener locationListener;
     private String provider;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -70,7 +71,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
     private static int DISPLACEMENT = 10; // 10 meters
     public static final String TAG = "locationCheck";
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
-    private static final int[] COLORS = new int[]{R.color.primary_dark,R.color.primary,R.color.primary_light,R.color.accent,R.color.primary_dark_material_light};
+    private static final int[] COLORS = new int[]{R.color.primary_dark, R.color.primary, R.color.primary_light, R.color.accent, R.color.primary_dark_material_light};
 
 
     private GoogleMap map;
@@ -86,13 +87,15 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
 
     Bundle bundle;
 
-    double latitude, longitude;
+    //  double latitude, longitude;
 
     LatLng markerLatlng;
 
     LatLng start, end;
 
     private List<Polyline> polylines;
+
+    double payment;
 
     @Nullable
     @Override
@@ -103,10 +106,27 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
         SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
         Log.d(TAG, "hatice123");
 
+        if (mapFragment == null) {
+            mapFragment = SupportMapFragment.newInstance();
+            getChildFragmentManager().beginTransaction().replace(R.id.map, mapFragment).commit();
+        }
 
         mapFragment.getMapAsync(this);
 
+        final LocationManager manager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+
+        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+            showSettingsAlert();
+        }
+
+
         buildGoogleApiClient();
+        MapsInitializer.initialize(getContext());
+        mGoogleApiClient.connect();
+
+
+        polylines = new ArrayList<>();
+
         displayLocation();
 
 
@@ -140,15 +160,16 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
     }
 
     public void calculateRoute() {
-        LatLng start = new LatLng(18.015365, -77.499382);
-        LatLng waypoint= new LatLng(18.01455, -77.499333);
-        LatLng end = new LatLng(18.012590, -77.500659);
+
+        Log.d("startLatitude", String.valueOf(start));
+        Log.d("endLatitude", String.valueOf(end));
 
 
         Routing routing = new Routing.Builder()
-                .travelMode(Routing.TravelMode.WALKING)
+                .travelMode(Routing.TravelMode.DRIVING)
                 .withListener(this)
-                .waypoints(start, waypoint, end)
+                .waypoints(start, end)
+                .alternativeRoutes(true)
                 .build();
         routing.execute();
 
@@ -158,7 +179,8 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
     @Override
     public void onResume() {
         super.onResume();
-         mGoogleApiClient.connect();
+        mGoogleApiClient.connect();
+        displayLocation();
     }
 
 
@@ -181,8 +203,6 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
     }
 
 
-
-
     protected synchronized void buildGoogleApiClient() {
 
         if (mGoogleApiClient == null) {
@@ -194,7 +214,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
         }
 
     }
-
+/*
     @Override
     public void onLocationChanged(Location location) {
         latitude = location.getLatitude();
@@ -202,8 +222,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
 
         Log.d("locationLatitude", String.valueOf(latitude));
         Log.d("locationLongitude", String.valueOf(longitude));
-    }
-
+    }*/
 
 
     @Override
@@ -236,7 +255,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
                 Toast.makeText(getContext(),
                         "This device is not supported.", Toast.LENGTH_LONG)
                         .show();
-             //   finish();
+                //   finish();
             }
             return false;
         }
@@ -253,16 +272,13 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
     }
 
 
-
     @TargetApi(Build.VERSION_CODES.M)
     private void displayLocation() {
 
         if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-
             requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             requestPermissions(new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
-
 
         }
 
@@ -271,8 +287,8 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
         location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
         if (location != null) {
-            latitude = Double.valueOf(location.getLatitude());
-            longitude = Double.valueOf(location.getLongitude());
+            //        latitude = Double.valueOf(location.getLatitude());
+            //        longitude = Double.valueOf(location.getLongitude());
 
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
@@ -288,11 +304,8 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
             map.animateCamera(zoom);
 
 
-
-            Log.d("location", String.valueOf(latitude));
-            Log.d("location", String.valueOf(longitude));
-
-
+            //      Log.d("location", String.valueOf(latitude));
+            //      Log.d("location", String.valueOf(longitude));
 
 
         } else {
@@ -313,7 +326,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
     }
 
 
-    public void showSettingsAlert(){
+    public void showSettingsAlert() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
 
         // Setting Dialog Title
@@ -327,7 +340,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
 
         // On pressing Settings button
         alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog,int which) {
+            public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 getContext().startActivity(intent);
             }
@@ -347,15 +360,19 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
     @Override
     public void onRoutingFailure(RouteException e) {
 
-        if(e != null) {
+        Log.d("locationTag", "onRoutingFailure");
+
+        if (e != null) {
             Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }else {
+        } else {
             Toast.makeText(getContext(), "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onRoutingStart() {
+
+        Log.d("locationTag", "onRoutingStart");
 
 
     }
@@ -364,17 +381,19 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
     public void onRoutingSuccess(ArrayList<Route> route, int shortestRouteIndex) {
 
 
-        if(polylines.size()>0) {
+        Log.d("locationTag", "onRoutingSuccess");
+
+
+        if (polylines.size() > 0) {
             for (Polyline poly : polylines) {
                 poly.remove();
             }
         }
 
-        polylines = new ArrayList<>();
 
         //add route(s) to the map.
 
-        for (int i = 0; i <route.size(); i++) {
+        for (int i = 0; i < route.size(); i++) {
 
             //In case of more than 5 alternative routes
             int colorIndex = i % COLORS.length;
@@ -386,7 +405,15 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
             Polyline polyline = map.addPolyline(polyOptions);
             polylines.add(polyline);
 
-            Toast.makeText(getContext(),"Route "+ (i+1) +": distance - "+ route.get(i).getDistanceValue()+": duration - "+ route.get(i).getDurationValue(),Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Route " + (i + 1) + ": distance - " + route.get(i).getDistanceValue() + ": duration - " + route.get(i).getDurationValue(), Toast.LENGTH_LONG).show();
+
+            double result = calculatePaymentInTL(route.get(i).getDistanceValue());
+
+            Toast.makeText(getContext(), "TL = " + String.valueOf(result), Toast.LENGTH_LONG).show();
+
+            Log.d("LocationDistance", String.valueOf(route.get(i).getDistanceValue()));
+            Log.d("LocationDuration", String.valueOf(route.get(i).getDurationValue()));
+
         }
 
         MarkerOptions options = new MarkerOptions();
@@ -401,17 +428,25 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, L
         map.addMarker(options);
 
 
+    }
 
 
+    private double calculatePaymentInTL(int distanceValue) {
 
+        int kilometers = distanceValue / 1000;
+        int meters = distanceValue - kilometers * 1000;
 
+        payment = 3.45 + (distanceValue * 2.10) + (meters * 0.0021);
 
-
+        return payment;
 
     }
 
     @Override
     public void onRoutingCancelled() {
+
+        Log.d("locationTag", "onRoutingCancelled");
+
 
         Log.i(TAG, "Routing was cancelled.");
     }
