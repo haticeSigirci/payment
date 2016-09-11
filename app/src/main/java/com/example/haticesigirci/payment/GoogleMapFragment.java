@@ -90,6 +90,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
     //  double latitude, longitude;
 
     LatLng markerLatlng;
+    LocationManager locationManager;
 
     LatLng start, end;
 
@@ -113,9 +114,9 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
 
         mapFragment.getMapAsync(this);
 
-        final LocationManager manager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
-        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             showSettingsAlert();
         }
 
@@ -133,6 +134,15 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
         return view;
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            showSettingsAlert();
+        }
+
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -214,16 +224,6 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
         }
 
     }
-/*
-    @Override
-    public void onLocationChanged(Location location) {
-        latitude = location.getLatitude();
-        longitude = location.getLongitude();
-
-        Log.d("locationLatitude", String.valueOf(latitude));
-        Log.d("locationLongitude", String.valueOf(longitude));
-    }*/
-
 
     @Override
     public void onConnectionSuspended(int i) {
@@ -328,33 +328,27 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
 
     public void showSettingsAlert() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
-
-        // Setting Dialog Title
         alertDialog.setTitle("GPS is settings");
-
-        // Setting Dialog Message
         alertDialog.setMessage("GPS is not enabled. Do you want to go to settings menu?");
 
-        // Setting Icon to Dialog
-        //alertDialog.setIcon(R.drawable.delete);
-
-        // On pressing Settings button
         alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
+
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                getContext().startActivity(intent);
+                startActivityForResult(intent, 1);
+
+                dialog.dismiss();
             }
         });
 
-        // on pressing cancel button
         alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
             }
         });
 
-        // Showing Alert Message
         alertDialog.show();
+
     }
 
     @Override
