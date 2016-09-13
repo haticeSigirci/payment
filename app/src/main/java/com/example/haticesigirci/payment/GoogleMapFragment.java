@@ -394,9 +394,11 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
 
             PolylineOptions polyOptions = new PolylineOptions();
             polyOptions.color(getResources().getColor(COLORS[colorIndex]));
-            polyOptions.width(10 + i * 3);
+            polyOptions.width(10 + i * 5);
             polyOptions.addAll(route.get(i).getPoints());
+
             Polyline polyline = map.addPolyline(polyOptions);
+            polyline.isClickable();
             polylines.add(polyline);
 
             Toast.makeText(getContext(), "Route " + (i + 1) + ": distance - " + route.get(i).getDistanceValue() + ": duration - " + route.get(i).getDurationValue(), Toast.LENGTH_LONG).show();

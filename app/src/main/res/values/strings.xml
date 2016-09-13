@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Payment</string>
+    <string name="google_map_title">Harita</string>
+    <string name="choose_title">Secim</string>
 </resources>
