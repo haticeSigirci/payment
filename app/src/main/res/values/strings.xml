@@ -2,4 +2,7 @@
     <string name="app_name">Payment</string>
     <string name="google_map_title">Harita</string>
     <string name="choose_title">Secim</string>
+    <string name="action_left">left</string>
+    <string name="action_mid">mid</string>
+    <string name="action_right">right</string>
 </resources>

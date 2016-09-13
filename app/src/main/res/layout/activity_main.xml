@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
+    xmlns:ebm="http://schemas.android.com/apk/res-auto"
     tools:context="com.example.haticesigirci.payment.MainActivity">
 
     <com.ogaclejapan.smarttablayout.SmartTabLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -34,6 +34,24 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/viewpagertab" />
+
+    <lt.lemonlabs.android.expandablebuttonmenu.ExpandableMenuOverlay
+        android:id="@+id/button_menu"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        ebm:mainButtonSize="0.10"
+        ebm:otherButtonSize="0.08"
+        android:src="@drawable/circle_home"
+        ebm:closeButtonSrc="@drawable/circle_close"
+        ebm:leftButtonSrc="@drawable/circle_1"
+        ebm:midButtonSrc="@drawable/circle_2"
+        ebm:rightButtonSrc="@drawable/circle_3"
+        ebm:leftButtonText="@string/action_left"
+        ebm:midButtonText="@string/action_mid"
+        ebm:rightButtonText="@string/action_right"
+        />
 
 
 

@@ -44,6 +44,9 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 import java.util.List;
 
+import lt.lemonlabs.android.expandablebuttonmenu.ExpandableButtonMenu;
+import lt.lemonlabs.android.expandablebuttonmenu.ExpandableMenuOverlay;
+
 /**
  * Created by haticesigirci on 27/08/16.
  */
@@ -96,7 +99,10 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
 
     private List<Polyline> polylines;
 
+    ExpandableMenuOverlay menuOverlay;
     double payment;
+
+    ArrayList<Route> allRoutes;
 
     @Nullable
     @Override
@@ -120,6 +126,28 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
             showSettingsAlert();
         }
 
+        menuOverlay = (ExpandableMenuOverlay) getActivity().findViewById(R.id.button_menu);
+        menuOverlay.setOnMenuButtonClickListener(new ExpandableButtonMenu.OnMenuButtonClick() {
+            @Override
+            public void onClick(ExpandableButtonMenu.MenuButton action) {
+                switch (action) {
+                    case MID:
+                        Toast.makeText(getContext(), "Mid pressed", Toast.LENGTH_SHORT).show();
+                        drawPoliyline(allRoutes, 1);
+                      //  menuOverlay.getButtonMenu().toggle();
+                        break;
+                    case LEFT:
+                        Toast.makeText(getContext(), "Left pressed", Toast.LENGTH_SHORT).show();
+                        drawPoliyline(allRoutes, 0);
+                        break;
+                    case RIGHT:
+                        Toast.makeText(getContext(), "Right pressed", Toast.LENGTH_SHORT).show();
+                        drawPoliyline(allRoutes, 2);
+                        break;
+                }
+            }
+        });
+
 
         buildGoogleApiClient();
         MapsInitializer.initialize(getContext());
@@ -133,6 +161,8 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
 
         return view;
     }
+
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -371,46 +401,38 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
 
     }
 
-    @Override
-    public void onRoutingSuccess(ArrayList<Route> route, int shortestRouteIndex) {
-
-
-        Log.d("locationTag", "onRoutingSuccess");
-
-
+    public void drawPoliyline(ArrayList<Route> route, int whichRoute) {
         if (polylines.size() > 0) {
             for (Polyline poly : polylines) {
                 poly.remove();
             }
         }
 
-
         //add route(s) to the map.
 
-        for (int i = 0; i < route.size(); i++) {
+        //  for (int i = 0; i < route.size(); i++) {
 
-            //In case of more than 5 alternative routes
-            int colorIndex = i % COLORS.length;
+        //In case of more than 5 alternative routes
+        int colorIndex = whichRoute % COLORS.length;
 
-            PolylineOptions polyOptions = new PolylineOptions();
-            polyOptions.color(getResources().getColor(COLORS[colorIndex]));
-            polyOptions.width(10 + i * 5);
-            polyOptions.addAll(route.get(i).getPoints());
+        PolylineOptions polyOptions = new PolylineOptions();
+        polyOptions.color(getResources().getColor(COLORS[colorIndex]));
+        polyOptions.width(10 + whichRoute * 5);
+        polyOptions.addAll(route.get(whichRoute).getPoints());
 
-            Polyline polyline = map.addPolyline(polyOptions);
-            polyline.isClickable();
-            polylines.add(polyline);
+        Polyline polyline = map.addPolyline(polyOptions);
+        polyline.isClickable();
+        polylines.add(polyline);
 
-            Toast.makeText(getContext(), "Route " + (i + 1) + ": distance - " + route.get(i).getDistanceValue() + ": duration - " + route.get(i).getDurationValue(), Toast.LENGTH_LONG).show();
+        Toast.makeText(getContext(), "Route " + (whichRoute + 1) + ": distance - " + route.get(whichRoute).getDistanceValue() + ": duration - " + route.get(whichRoute).getDurationValue(), Toast.LENGTH_LONG).show();
 
-            double result = calculatePaymentInTL(route.get(i).getDistanceValue());
+        double result = calculatePaymentInTL(route.get(whichRoute).getDistanceValue());
 
-            Toast.makeText(getContext(), "TL = " + String.valueOf(result), Toast.LENGTH_LONG).show();
+        Toast.makeText(getContext(), "TL = " + String.valueOf(result), Toast.LENGTH_LONG).show();
 
-            Log.d("LocationDistance", String.valueOf(route.get(i).getDistanceValue()));
-            Log.d("LocationDuration", String.valueOf(route.get(i).getDurationValue()));
+        Log.d("LocationDistance", String.valueOf(route.get(whichRoute).getDistanceValue()));
+        Log.d("LocationDuration", String.valueOf(route.get(whichRoute).getDurationValue()));
 
-        }
 
         MarkerOptions options = new MarkerOptions();
         options.position(start);
@@ -422,6 +444,16 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
         options.position(end);
         options.icon(BitmapDescriptorFactory.fromResource(R.drawable.end_green));
         map.addMarker(options);
+
+    }
+
+    @Override
+    public void onRoutingSuccess(ArrayList<Route> route, int whichRoute) {
+
+
+        Log.d("locationTag", "onRoutingSuccess");
+
+        allRoutes = new ArrayList<Route>(route);
 
 
     }
