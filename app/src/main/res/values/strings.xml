@@ -5,4 +5,11 @@
     <string name="action_left">left</string>
     <string name="action_mid">mid</string>
     <string name="action_right">right</string>
+    <string name="done">Hesaplandi</string>
+    <string name="upload">Hesapla</string>
+    <string name="uploading">Hesaplaniyor</string>
+    <string name="estimated_payment">Tahmini Ucret</string>
+    <string name="estimated_time">Tahmini Varış Süresi</string>
+    <string name="distance">Mesafe</string>
+
 </resources>

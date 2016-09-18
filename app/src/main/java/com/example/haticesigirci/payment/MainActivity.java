@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         viewPagerTab.setViewPager(viewPager);
 
 
+
         mapFragment = new GoogleMapFragment();
 
         searchAreaFragment = new SearchAreaFragment();

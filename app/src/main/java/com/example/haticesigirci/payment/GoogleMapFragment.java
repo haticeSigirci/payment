@@ -25,7 +25,6 @@ import com.directions.route.RouteException;
 import com.directions.route.Routing;
 import com.directions.route.RoutingListener;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -134,7 +133,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
                     case MID:
                         Toast.makeText(getContext(), "Mid pressed", Toast.LENGTH_SHORT).show();
                         drawPoliyline(allRoutes, 1);
-                      //  menuOverlay.getButtonMenu().toggle();
+                        //  menuOverlay.getButtonMenu().toggle();
                         break;
                     case LEFT:
                         Toast.makeText(getContext(), "Left pressed", Toast.LENGTH_SHORT).show();
@@ -153,15 +152,12 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
         MapsInitializer.initialize(getContext());
         mGoogleApiClient.connect();
 
-
         polylines = new ArrayList<>();
 
         displayLocation();
 
-
         return view;
     }
-
 
 
     @Override
@@ -178,6 +174,11 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
     public void onMapReady(GoogleMap googleMap) {
 
         map = googleMap;
+
+        if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        map.setMyLocationEnabled(true);
 
         map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -272,24 +273,6 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
 
         displayLocation();
 
-    }
-
-    private boolean checkPlayServices() {
-        int resultCode = GooglePlayServicesUtil
-                .isGooglePlayServicesAvailable(getContext());
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog(resultCode, getActivity(),
-                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-            } else {
-                Toast.makeText(getContext(),
-                        "This device is not supported.", Toast.LENGTH_LONG)
-                        .show();
-                //   finish();
-            }
-            return false;
-        }
-        return true;
     }
 
     protected void createLocationRequest() {
