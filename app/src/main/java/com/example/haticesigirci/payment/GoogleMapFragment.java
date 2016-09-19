@@ -125,7 +125,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
             showSettingsAlert();
         }
 
-        menuOverlay = (ExpandableMenuOverlay) getActivity().findViewById(R.id.button_menu);
+        menuOverlay = (ExpandableMenuOverlay) view.findViewById(R.id.button_menu);
         menuOverlay.setOnMenuButtonClickListener(new ExpandableButtonMenu.OnMenuButtonClick() {
             @Override
             public void onClick(ExpandableButtonMenu.MenuButton action) {

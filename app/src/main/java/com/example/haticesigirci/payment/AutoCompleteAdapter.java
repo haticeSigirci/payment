@@ -13,7 +13,6 @@ import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.AutocompletePredictionBuffer;
 import com.google.android.gms.location.places.Places;
-import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.model.LatLngBounds;
 
 import java.util.ArrayList;
@@ -23,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by haticesigirci on 15/09/16.
  */
-public class AutoCompleteAdapter extends ArrayAdapter<AutoCompleteAdapter.PlaceAutoComplete> implements Filterable {
+public class AutoCompleteAdapter extends ArrayAdapter<AutoCompleteAdapter.PlaceAutocomplete> implements Filterable {
 
 
     //Definitions
@@ -53,8 +52,8 @@ public class AutoCompleteAdapter extends ArrayAdapter<AutoCompleteAdapter.PlaceA
     }
 
     @Override
-    public PlaceAutoComplete getItem(int position) {
-        return super.getItem(position);
+    public PlaceAutocomplete getItem(int position) {
+        return resultList.get(position);
     }
 
     @Override
@@ -68,15 +67,15 @@ public class AutoCompleteAdapter extends ArrayAdapter<AutoCompleteAdapter.PlaceA
 
                 if (constraint != null) {
 
-                    resultList = getAutoComplete(constraint.toString());
+                    resultList = getAutoComplete(constraint);
                     Log.d("insideIfconstraint","insideIfConstraint");
-                   // if (resultList != null) {
+                    if (resultList != null) {
 
                         Log.d("insideIfresult","insideIfresult");
 
                         results.count = resultList.size();
                         results.values = resultList;
-                   // }
+                    }
 
                 }
 
@@ -108,9 +107,16 @@ public class AutoCompleteAdapter extends ArrayAdapter<AutoCompleteAdapter.PlaceA
 
             PendingResult<AutocompletePredictionBuffer> results = Places.GeoDataApi.getAutocompletePredictions(googleApiClient, constraint.toString(), bounds, placeFilter);
 
+            Log.d("resultsPending", results.toString());
+
             AutocompletePredictionBuffer autocompletePredictions = results.await(60, TimeUnit.SECONDS); //wait for 60 seconds to find that is searched item
 
+            Log.d("resultsPredictions", autocompletePredictions.toString());
+
             final Status status = autocompletePredictions.getStatus(); // check result
+
+            Log.d("resultStatus", status.toString());
+
 
             if (!status.isSuccess()) {
 
@@ -125,7 +131,7 @@ public class AutoCompleteAdapter extends ArrayAdapter<AutoCompleteAdapter.PlaceA
             while (iterator.hasNext()) {
 
                 AutocompletePrediction prediction = iterator.next();
-                resultList.add(new PlaceAutoComplete(prediction.getPlaceId(), prediction.getFullText(null)));
+                resultList.add(new PlaceAutocomplete(prediction.getPlaceId(), prediction.getFullText(null)));
 
             }
 
@@ -138,12 +144,12 @@ public class AutoCompleteAdapter extends ArrayAdapter<AutoCompleteAdapter.PlaceA
         return null;
     }
 
-    class PlaceAutoComplete {
+    class PlaceAutocomplete {
 
         public CharSequence placeId;
         public CharSequence description;
 
-        PlaceAutoComplete(CharSequence placeId, CharSequence description) {
+        PlaceAutocomplete(CharSequence placeId, CharSequence description) {
 
             this.placeId = placeId;
             this.description = description;
