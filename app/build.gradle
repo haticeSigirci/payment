@@ -22,13 +22,14 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.0'
+    compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.google.android.gms:play-services:9.4.0'
     compile 'com.jakewharton:butterknife:5.1.1'
     compile 'com.github.jd-alexander:library:1.1.0'
     compile 'com.ogaclejapan.smarttablayout:library:1.6.1@aar'
     compile 'com.ogaclejapan.smarttablayout:utils-v4:1.6.1@aar'
     compile 'com.ogaclejapan.smarttablayout:utils-v13:1.6.1@aar'
+    compile 'com.github.dmytrodanylyk.android-process-button:library:1.0.4'
     compile 'co.lemonlabs:expandable-button-menu:1.0.0'
 
 }

@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.directions.route.Route;
@@ -52,56 +53,41 @@ import lt.lemonlabs.android.expandablebuttonmenu.ExpandableMenuOverlay;
 public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, RoutingListener {
 
+    public static final String TAG = "locationCheck";
     // The minimum distance to change Updates in meters
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
-
     // The minimum time between updates in milliseconds
     private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 minute
-
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-
-    private boolean mRequestingLocationUpdates;  //use as a flag need research
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
+    private static final int[] COLORS = new int[]{R.color.primary_dark, R.color.primary, R.color.primary_light, R.color.accent, R.color.primary_dark_material_light};
+    private static int UPDATE_INTERVAL = 10000; // 10 sec
+    private static int FATEST_INTERVAL = 5000; // 5 sec
+    private static int DISPLACEMENT = 10; // 10 meters
     Location location;// location
+    // flag for GPS status
+    boolean isGPSEnabled = false;
+    // flag for network status
+    boolean isNetworkEnabled = false;
+    boolean canGetLocation = false;
+    Bundle bundle;
+    LatLng markerLatlng;
+    LocationManager locationManager;
+    LatLng start, end;
+    ExpandableMenuOverlay menuOverlay;
+    double payment;
+
+    //  double latitude, longitude;
+    ArrayList<Route> allRoutes;
+    private boolean mRequestingLocationUpdates;  //use as a flag need research
     // LocationManager locationManager;
     // LocationListener locationListener;
     private String provider;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
-
-    private static int UPDATE_INTERVAL = 10000; // 10 sec
-    private static int FATEST_INTERVAL = 5000; // 5 sec
-    private static int DISPLACEMENT = 10; // 10 meters
-    public static final String TAG = "locationCheck";
-    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
-    private static final int[] COLORS = new int[]{R.color.primary_dark, R.color.primary, R.color.primary_light, R.color.accent, R.color.primary_dark_material_light};
-
-
     private GoogleMap map;
-
-
-    // flag for GPS status
-    boolean isGPSEnabled = false;
-
-    // flag for network status
-    boolean isNetworkEnabled = false;
-
-    boolean canGetLocation = false;
-
-    Bundle bundle;
-
-    //  double latitude, longitude;
-
-    LatLng markerLatlng;
-    LocationManager locationManager;
-
-    LatLng start, end;
-
     private List<Polyline> polylines;
-
-    ExpandableMenuOverlay menuOverlay;
-    double payment;
-
-    ArrayList<Route> allRoutes;
+    private Button cleanButton;
 
     @Nullable
     @Override
@@ -118,6 +104,8 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
         }
 
         mapFragment.getMapAsync(this);
+
+        cleanButton = (Button) view.findViewById(R.id.btn_clean_map);
 
         locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
@@ -147,6 +135,15 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
             }
         });
 
+
+        cleanButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                map.clear();
+
+            }
+        });
 
         buildGoogleApiClient();
         MapsInitializer.initialize(getContext());

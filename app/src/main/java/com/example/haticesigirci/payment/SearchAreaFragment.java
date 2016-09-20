@@ -1,5 +1,6 @@
 package com.example.haticesigirci.payment;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -17,7 +18,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.directions.route.AbstractRouting;
+import com.directions.route.Route;
+import com.directions.route.RouteException;
+import com.directions.route.Routing;
+import com.directions.route.RoutingListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -31,10 +39,12 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
+import java.util.ArrayList;
+
 /**
  * Created by haticesigirci on 13/09/16.
  */
-public class SearchAreaFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class SearchAreaFragment extends Fragment implements RoutingListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final LatLngBounds BOUNDS_TURKEY = new LatLngBounds(
             new LatLng(-85, -180), new LatLng(85, 180));
@@ -44,18 +54,18 @@ public class SearchAreaFragment extends Fragment implements GoogleApiClient.Conn
     //   @InjectView(R.id.destination_point)
     AutoCompleteTextView endPoint;
     PlaceAutocomplete placeAutocomplete;
+    LatLng start;
+    LatLng end;
+    AutoCompleteAdapter autoCompleteAdapter;
+    double payment;
+    TextView estimatedPayment;
+    TextView estimatedTime;
+    TextView distance;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Location location;
-
     private Button routeButton;
-
-    LatLng start;
-    LatLng end;
-
-    AutoCompleteAdapter autoCompleteAdapter;
-
-
+    private ProgressDialog progressDialog;
 
     @Nullable
     @Override
@@ -69,6 +79,10 @@ public class SearchAreaFragment extends Fragment implements GoogleApiClient.Conn
         routeButton = (Button) view.findViewById(R.id.btnUpload);
 
 
+        distance = (TextView) view.findViewById(R.id.distance);
+        estimatedPayment = (TextView) view.findViewById(R.id.estimated_payment);
+        estimatedTime = (TextView) view.findViewById(R.id.estimated_time);
+
         Context c = getActivity().getApplicationContext();
 
         //  ButterKnife.inject(getActivity());
@@ -76,7 +90,6 @@ public class SearchAreaFragment extends Fragment implements GoogleApiClient.Conn
         buildGoogleApiClient();
         mGoogleApiClient.connect();
         createLocationRequest();
-
 
 
         autoCompleteAdapter = new AutoCompleteAdapter(c, android.R.layout.simple_dropdown_item_1line, mGoogleApiClient, BOUNDS_TURKEY, null);
@@ -89,19 +102,6 @@ public class SearchAreaFragment extends Fragment implements GoogleApiClient.Conn
         startPoint.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-
-
-                if (position == 0) {
-
-                    Log.d("understandingbutton", "inside");
-
-
-                } else if (position == 2) {
-
-                    Log.d("understandingbutton", "inside");
-
-                }
-
 
                 final AutoCompleteAdapter.PlaceAutocomplete item = autoCompleteAdapter.getItem(position);
                 final String placeId = String.valueOf(item.placeId);
@@ -154,13 +154,11 @@ public class SearchAreaFragment extends Fragment implements GoogleApiClient.Conn
             }
         });
 
-
         startPoint.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
                 Log.d("beforeText", "insideBeforeTextChanged");
-
 
             }
 
@@ -209,6 +207,7 @@ public class SearchAreaFragment extends Fragment implements GoogleApiClient.Conn
             @Override
             public void onClick(View view) {
                 Log.d("insidebutton", "insidebutton");
+                route();
             }
         });
 
@@ -265,4 +264,81 @@ public class SearchAreaFragment extends Fragment implements GoogleApiClient.Conn
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
     }
+
+    private void route() {
+
+        if (start == null || end == null) {
+            if (start == null) {
+                if (startPoint.getText().length() > 0) {
+                    startPoint.setError("Choose location from dropdown.");
+                } else {
+                    Toast.makeText(getContext(), "Please choose a starting point.", Toast.LENGTH_SHORT).show();
+                }
+            }
+            if (end == null) {
+                if (endPoint.getText().length() > 0) {
+                    endPoint.setError("Choose location from dropdown.");
+                } else {
+                    Toast.makeText(getContext(), "Please choose a destination.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        } else
+
+            progressDialog = ProgressDialog.show(getContext(), "Please wait.",
+                    "Fetching route information.", true);
+        Routing routing = new Routing.Builder()
+                .travelMode(AbstractRouting.TravelMode.DRIVING)
+                .withListener(this)
+                .alternativeRoutes(true)
+                .waypoints(start, end)
+                .build();
+        routing.execute();
+    }
+
+    @Override
+    public void onRoutingFailure(RouteException e) {
+
+    }
+
+    @Override
+    public void onRoutingStart() {
+
+    }
+
+    @Override
+    public void onRoutingSuccess(ArrayList<Route> route, int whichRoute) {
+
+        progressDialog.dismiss();
+
+        Toast.makeText(getContext(), "Route " + (whichRoute + 1) + ": distance - " + route.get(whichRoute).getDistanceValue() + ": duration - " + route.get(whichRoute).getDurationValue(), Toast.LENGTH_LONG).show();
+
+        double result = calculatePaymentInTL(route.get(whichRoute).getDistanceValue());
+
+
+        estimatedPayment.setText(String.valueOf(result));
+        estimatedTime.setText(String.valueOf(route.get(whichRoute).getDurationValue()));
+        distance.setText(String.valueOf(route.get(whichRoute).getDistanceValue()));
+
+
+    }
+
+    private double calculatePaymentInTL(int distanceValue) {
+
+        int kilometers = distanceValue / 1000;
+        int meters = distanceValue - kilometers * 1000;
+
+        payment = 3.45 + (distanceValue * 2.10) + (meters * 0.0021);
+
+        return payment;
+
+    }
+
+    @Override
+    public void onRoutingCancelled() {
+
+    }
 }
+
+
+
+
