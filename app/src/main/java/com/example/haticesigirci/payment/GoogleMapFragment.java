@@ -44,7 +44,6 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 import java.util.List;
 
-import lt.lemonlabs.android.expandablebuttonmenu.ExpandableButtonMenu;
 import lt.lemonlabs.android.expandablebuttonmenu.ExpandableMenuOverlay;
 
 /**
@@ -105,7 +104,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
 
         mapFragment.getMapAsync(this);
 
-        cleanButton = (Button) view.findViewById(R.id.btn_clean_map);
+        //  cleanButton = (Button) view.findViewById(R.id.btn_clean_map);
 
         locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
@@ -113,7 +112,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
             showSettingsAlert();
         }
 
-        menuOverlay = (ExpandableMenuOverlay) view.findViewById(R.id.button_menu);
+     /*   menuOverlay = (ExpandableMenuOverlay) view.findViewById(R.id.button_menu);
         menuOverlay.setOnMenuButtonClickListener(new ExpandableButtonMenu.OnMenuButtonClick() {
             @Override
             public void onClick(ExpandableButtonMenu.MenuButton action) {
@@ -143,7 +142,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
                 map.clear();
 
             }
-        });
+        });*/
 
         buildGoogleApiClient();
         MapsInitializer.initialize(getContext());
@@ -217,6 +216,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
     @Override
     public void onResume() {
         super.onResume();
+        mGoogleApiClient.connect();
         mGoogleApiClient.connect();
         displayLocation();
     }

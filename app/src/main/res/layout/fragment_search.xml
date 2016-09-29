@@ -35,7 +35,6 @@
             android:completionThreshold="1"
             android:focusable="true"
             android:imeOptions="actionNext"
-
             />
 
         <com.dd.processbutton.iml.GenerateProcessButton
@@ -115,8 +114,7 @@
             android:layout_height="match_parent"
             android:layout_margin="@dimen/padding"
             android:layout_weight="1"
-            android:orientation="vertical"
-            >
+            android:orientation="vertical">
 
             <TextView
 
@@ -124,17 +122,14 @@
                 android:layout_height="match_parent"
                 android:text="@string/distance"
                 android:textColor="@color/blue_dark"
-                android:textStyle="bold"
-                />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/distance"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:textColor="@color/black"
-                android:textSize="20sp"
-
-                />
+                android:textSize="20sp" />
 
 
         </LinearLayout>
