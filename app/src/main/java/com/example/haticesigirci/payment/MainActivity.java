@@ -16,17 +16,22 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.directions.route.Route;
 import com.directions.route.RouteException;
 import com.directions.route.Routing;
 import com.directions.route.RoutingListener;
+import com.fivehundredpx.android.blur.BlurringView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -58,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap map;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
+    private BlurringView blurringView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -66,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_main);
 
         buildGoogleMap();
+        blurringView = (BlurringView) findViewById(R.id.blurringView);
 
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
@@ -75,13 +82,33 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         buildGoogleApiClient();
 
+        mGoogleApiClient.connect();
+
+        MapsInitializer.initialize(getApplicationContext());
+
+        createLocationRequest();
+
+        blurMap();
+
+
+    }
+
+    private void blurMap() {
+
+
+        View blurredView = findViewById(R.id.bottom_barLayout);
+
+
+        blurringView.setBlurredView(blurredView);
 
     }
 
     public void buildGoogleMap() {
 
-        SupportMapFragment fragment = SupportMapFragment.newInstance();
-        fragment.getChildFragmentManager().findFragmentById(R.id.map);
+        SupportMapFragment fragment = (SupportMapFragment) this.getSupportFragmentManager().findFragmentById(R.id.map);
+      /*  fragment.getChildFragmentManager().findFragmentById(R.id.map);
+        fragment.getMapAsync(this);*/
+
         fragment.getMapAsync(this);
 
     }
@@ -205,11 +232,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         }
 
-        createLocationRequest();
+        //    createLocationRequest();
 
         location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
-        if (location != null) {
+        if (location != null && map != null) {
             //        latitude = Double.valueOf(location.getLatitude());
             //        longitude = Double.valueOf(location.getLongitude());
 
@@ -219,12 +246,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             //    map.addMarker(new MarkerOptions().position(latLng).title("hiyk"));
 
 
-          /*  CameraUpdate myLocation = CameraUpdateFactory.newLatLng(latLng);
+            CameraUpdate myLocation = CameraUpdateFactory.newLatLng(latLng);
 
             CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
 
             map.moveCamera(myLocation);
-            map.animateCamera(zoom);*/
+            map.animateCamera(zoom);
 
 
             //      Log.d("location", String.valueOf(latitude));
@@ -308,6 +335,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
+        displayLocation();
+
+
     }
 
     @Override
@@ -318,6 +348,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = ");
+        buildGoogleApiClient();
     }
 
     @Override
