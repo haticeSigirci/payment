@@ -1,6 +1,7 @@
 package com.example.haticesigirci.payment;
 
 import android.annotation.TargetApi;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,10 +16,17 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.directions.route.AbstractRouting;
 import com.directions.route.Route;
 import com.directions.route.RouteException;
 import com.directions.route.Routing;
@@ -26,8 +34,13 @@ import com.directions.route.RoutingListener;
 import com.fivehundredpx.android.blur.BlurringView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -36,6 +49,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -49,7 +63,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public static final String TAG = "locationCheck";
 
     private static final int[] COLORS = new int[]{R.color.primary_dark, R.color.primary, R.color.primary_light, R.color.accent, R.color.primary_dark_material_light};
-
+    private static final LatLngBounds BOUNDS_TURKEY = new LatLngBounds(
+            new LatLng(-85, -180), new LatLng(85, 180));
     //  double latitude, longitude;
     ArrayList<Route> allRoutes;
     //Google and Location Settings
@@ -57,19 +72,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Location location;
     LatLng start, end;
     LatLng markerLatlng;
+    //Search Area
+    AutoCompleteTextView startPoint;
+    AutoCompleteTextView endPoint;
+    AutoCompleteAdapter autoCompleteAdapter;
     //variables
     double payment;
+    private ProgressDialog progressDialog;
+    private ImageView firstRouteButton;
+    private ImageView secondRouteButton;
+    private ImageView thirdRouteButton;
     private List<Polyline> polylines;
     private GoogleMap map;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private BlurringView blurringView;
 
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //initEvents initValues
 
         buildGoogleMap();
         blurringView = (BlurringView) findViewById(R.id.blurringView);
@@ -90,6 +116,134 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         blurMap();
 
+        buildSearchArea();
+
+
+    }
+
+    private void buildSearchArea() {
+
+        startPoint = (AutoCompleteTextView) findViewById(R.id.auto_complete_textView1);
+        endPoint = (AutoCompleteTextView) findViewById(R.id.auto_complete_textView2);
+        firstRouteButton = (ImageView) findViewById(R.id.firstRouteButton);
+
+        firstRouteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getApplicationContext(), "Image View OK", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+        autoCompleteAdapter = new AutoCompleteAdapter(getApplicationContext(), android.R.layout.simple_dropdown_item_1line, mGoogleApiClient, BOUNDS_TURKEY, null);
+
+        startPoint.setAdapter(autoCompleteAdapter);
+        endPoint.setAdapter(autoCompleteAdapter);
+
+        startPoint.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+                final AutoCompleteAdapter.PlaceAutocomplete item = autoCompleteAdapter.getItem(position);
+                final String placeId = String.valueOf(item.placeId);
+
+                PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeId);
+
+                placeResult.setResultCallback(new ResultCallback<PlaceBuffer>() {
+                    @Override
+                    public void onResult(@NonNull PlaceBuffer places) {
+
+                        if (!places.getStatus().isSuccess()) {
+
+                            places.release();
+                        }
+
+                        final Place place = places.get(0);
+
+                        start = place.getLatLng();
+
+                    }
+                });
+            }
+        });
+
+        endPoint.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+                final AutoCompleteAdapter.PlaceAutocomplete item = autoCompleteAdapter.getItem(position);
+                final String placeId = String.valueOf(item.placeId);
+
+                PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeId);
+
+                placeResult.setResultCallback(new ResultCallback<PlaceBuffer>() {
+                    @Override
+                    public void onResult(@NonNull PlaceBuffer places) {
+
+                        if (!places.getStatus().isSuccess()) {
+
+                            places.release();
+                        }
+
+                        final Place place = places.get(0);
+
+                        end = place.getLatLng();
+
+                    }
+                });
+
+            }
+        });
+
+        startPoint.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                Log.d("beforeText", "insideBeforeTextChanged");
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                Log.d("insideOnText", "insideOntextchanged");
+
+                if (start != null) {
+                    start = null;
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+
+                Log.d("afterText", "insideBeforeTextChanged");
+            }
+        });
+
+
+        endPoint.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                if (end != null) {
+                    end = null;
+                }
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+
 
     }
 
@@ -106,9 +260,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void buildGoogleMap() {
 
         SupportMapFragment fragment = (SupportMapFragment) this.getSupportFragmentManager().findFragmentById(R.id.map);
-      /*  fragment.getChildFragmentManager().findFragmentById(R.id.map);
-        fragment.getMapAsync(this);*/
+        View mapView = fragment.getView();
+        View locationButton = ((View) mapView.findViewById(1).getParent()).findViewById(2);
 
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
+        // position on right bottom
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+        layoutParams.setMargins(0, 0, 30, 120);
         fragment.getMapAsync(this);
 
     }
@@ -120,6 +279,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .addApi(LocationServices.API)
+                    .addApi(Places.GEO_DATA_API)
                     .build();
         }
 
@@ -132,6 +292,36 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mLocationRequest.setFastestInterval(5000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+    }
+
+    private void route() {
+
+        if (start == null || end == null) {
+            if (start == null) {
+                if (startPoint.getText().length() > 0) {
+                    startPoint.setError("Choose location from dropdown.");
+                } else {
+                    Toast.makeText(getApplicationContext(), "Please choose a starting point.", Toast.LENGTH_SHORT).show();
+                }
+            }
+            if (end == null) {
+                if (endPoint.getText().length() > 0) {
+                    endPoint.setError("Choose location from dropdown.");
+                } else {
+                    Toast.makeText(getApplicationContext(), "Please choose a destination.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        } else
+
+            progressDialog = ProgressDialog.show(getApplicationContext(), "Please wait.",
+                    "Fetching route information.", true);
+        Routing routing = new Routing.Builder()
+                .travelMode(AbstractRouting.TravelMode.DRIVING)
+                .withListener(this)
+                .alternativeRoutes(true)
+                .waypoints(start, end)
+                .build();
+        routing.execute();
     }
 
 
@@ -316,11 +506,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onRoutingSuccess(ArrayList<Route> route, int i) {
+    public void onRoutingSuccess(ArrayList<Route> route, int whichRoute) {
 
         Log.d("locationTag", "onRoutingSuccess");
 
         allRoutes = new ArrayList<Route>(route);
+
+
+        Toast.makeText(getApplicationContext(), "Route " + (whichRoute + 1) + ": distance - " + route.get(whichRoute).getDistanceValue() + ": duration - " + route.get(whichRoute).getDurationValue(), Toast.LENGTH_LONG).show();
+
+        double result = calculatePaymentInTL(route.get(whichRoute).getDistanceValue());
+
 
     }
 

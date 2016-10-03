@@ -4,36 +4,61 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_rectangle"
-    tools:context="com.example.haticesigirci.payment.MainActivity">
+    android:background="@drawable/background_rectangle">
 
-
-    <AutoCompleteTextView
-        android:id="@+id/textView1"
+    <FrameLayout
+        android:id="@+id/clearableText1"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_marginBottom="10dp"
         android:layout_marginLeft="40dp"
         android:layout_marginRight="20dp"
-        android:layout_marginTop="20dp"
-        android:background="@drawable/autocomplete_textview"
-        android:padding="12dp"
-        android:singleLine="true"
-        android:textColor="@color/black" />
+        android:layout_marginTop="20dp">
 
-    <AutoCompleteTextView
-        android:id="@+id/textView2"
+        <AutoCompleteTextView
+            android:id="@+id/auto_complete_textView1"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/autocomplete_textview"
+            android:paddingLeft="12dp"
+            android:singleLine="true"
+            android:textColor="@color/black" />
+
+        <ImageButton
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="right|center_vertical"
+            android:layout_marginRight="20dp"
+            android:background="@drawable/cross" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/clearableText2"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:layout_below="@id/textView1"
+        android:layout_below="@id/clearableText1"
         android:layout_marginBottom="10dp"
         android:layout_marginLeft="40dp"
-        android:layout_marginRight="20dp"
-        android:background="@drawable/autocomplete_textview"
-        android:padding="12dp"
-        android:singleLine="true"
+        android:layout_marginRight="20dp">
 
-        android:textColor="@color/black" />
+        <AutoCompleteTextView
+            android:id="@+id/auto_complete_textView2"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/autocomplete_textview"
+            android:paddingLeft="12dp"
+            android:singleLine="true"
+            android:textColor="@color/black" />
+
+        <ImageButton
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="right|center_vertical"
+            android:layout_marginRight="20dp"
+            android:background="@drawable/cross" />
+
+    </FrameLayout>
 
 
     <FrameLayout
@@ -90,6 +115,7 @@
                     android:src="@drawable/first_route" />
 
                 <ImageView
+                    android:id="@+id/firstRouteButton"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="0.5"
@@ -111,6 +137,7 @@
                     android:src="@drawable/secound_route" />
 
                 <ImageView
+                    android:id="@+id/secondRouteButton"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="0.5"
@@ -132,6 +159,7 @@
                     android:src="@drawable/third_route" />
 
                 <ImageView
+                    android:id="@+id/thirdRouteButton"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="0.5"
@@ -225,7 +253,7 @@
         </LinearLayout>
 
         <ImageView
-            android:layout_width="2dp"
+            android:layout_width="5dp"
             android:layout_height="match_parent"
             android:src="@drawable/bottom_bar_line" />
 
@@ -252,7 +280,7 @@
         </LinearLayout>
 
         <ImageView
-            android:layout_width="2dp"
+            android:layout_width="5dp"
             android:layout_height="match_parent"
             android:src="@drawable/bottom_bar_line" />
 
