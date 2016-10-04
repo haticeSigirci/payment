@@ -23,7 +23,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.directions.route.AbstractRouting;
@@ -88,6 +88,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationRequest mLocationRequest;
     private BlurringView blurringView;
 
+    //BotomBar Texts
+    private TextView paymentText;
+    private TextView distanceText;
+    private TextView timeText;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -95,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //initEvents initValues
+        //initEvents initValues initView
 
         buildGoogleMap();
         blurringView = (BlurringView) findViewById(R.id.blurringView);
@@ -109,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         buildGoogleApiClient();
 
         mGoogleApiClient.connect();
+        polylines = new ArrayList<>();
 
         MapsInitializer.initialize(getApplicationContext());
 
@@ -125,12 +131,70 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         startPoint = (AutoCompleteTextView) findViewById(R.id.auto_complete_textView1);
         endPoint = (AutoCompleteTextView) findViewById(R.id.auto_complete_textView2);
+
         firstRouteButton = (ImageView) findViewById(R.id.firstRouteButton);
+        secondRouteButton = (ImageView) findViewById(R.id.secondRouteButton);
+        thirdRouteButton = (ImageView) findViewById(R.id.thirdRouteButton);
+
+        paymentText = (TextView) findViewById(R.id.estimated_payment);
+        distanceText = (TextView) findViewById(R.id.distance);
+        timeText = (TextView) findViewById(R.id.estimated_time);
 
         firstRouteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getApplicationContext(), "Image View OK", Toast.LENGTH_SHORT).show();
+
+                firstRouteButton.setSelected(true);
+                secondRouteButton.setSelected(false);
+                thirdRouteButton.setSelected(false);
+
+                drawPoliyline(allRoutes, 0);
+
+                int payment = calculatePaymentInTL(allRoutes.get(0).getDistanceValue());
+
+                paymentText.setText(String.valueOf(payment));
+                distanceText.setText(allRoutes.get(0).getDistanceText());
+                timeText.setText(allRoutes.get(0).getDurationText());
+
+
+            }
+        });
+
+        secondRouteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                firstRouteButton.setSelected(false);
+                secondRouteButton.setSelected(true);
+                thirdRouteButton.setSelected(false);
+
+                drawPoliyline(allRoutes, 1);
+
+                int payment = calculatePaymentInTL(allRoutes.get(1).getDistanceValue());
+
+                paymentText.setText(String.valueOf(payment));
+                distanceText.setText(allRoutes.get(1).getDistanceText());
+                timeText.setText(allRoutes.get(1).getDurationText());
+
+
+            }
+        });
+
+        thirdRouteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                firstRouteButton.setSelected(false);
+                thirdRouteButton.setSelected(true);
+                secondRouteButton.setSelected(false);
+
+                drawPoliyline(allRoutes, 2);
+
+                int payment = calculatePaymentInTL(allRoutes.get(2).getDistanceValue());
+
+                paymentText.setText(String.valueOf(payment));
+                distanceText.setText(allRoutes.get(2).getDistanceText());
+                timeText.setText(allRoutes.get(2).getDurationText());
             }
         });
 
@@ -199,14 +263,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-                Log.d("beforeText", "insideBeforeTextChanged");
-
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-                Log.d("insideOnText", "insideOntextchanged");
 
                 if (start != null) {
                     start = null;
@@ -216,8 +276,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void afterTextChanged(Editable editable) {
 
-
-                Log.d("afterText", "insideBeforeTextChanged");
             }
         });
 
@@ -244,7 +302,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
 
-
     }
 
     private void blurMap() {
@@ -260,14 +317,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void buildGoogleMap() {
 
         SupportMapFragment fragment = (SupportMapFragment) this.getSupportFragmentManager().findFragmentById(R.id.map);
-        View mapView = fragment.getView();
-        View locationButton = ((View) mapView.findViewById(1).getParent()).findViewById(2);
-
+        //       View mapView = fragment.getView();
+//        View locationButton = ((View) mapView.findViewById(1).getParent()).findViewById(2);
+/*
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
         // position on right bottom
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-        layoutParams.setMargins(0, 0, 30, 120);
+        layoutParams.setMargins(0, 0, 30, 120);*/
         fragment.getMapAsync(this);
 
     }
@@ -351,6 +408,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void drawPoliyline(ArrayList<Route> route, int whichRoute) {
+
+
         if (polylines.size() > 0) {
             for (Polyline poly : polylines) {
                 poly.remove();
@@ -385,22 +444,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         MarkerOptions options = new MarkerOptions();
         options.position(start);
-        options.icon(BitmapDescriptorFactory.fromResource(R.drawable.start_blue));
+        options.icon(BitmapDescriptorFactory.fromResource(R.drawable.start_marker));
         map.addMarker(options);
 
         // End marker
         options = new MarkerOptions();
         options.position(end);
-        options.icon(BitmapDescriptorFactory.fromResource(R.drawable.end_green));
+        options.icon(BitmapDescriptorFactory.fromResource(R.drawable.destination_marker));
         map.addMarker(options);
 
     }
 
     public void calculateRoute() {
-
-        Log.d("startLatitude", String.valueOf(start));
-        Log.d("endLatitude", String.valueOf(end));
-
 
         Routing routing = new Routing.Builder()
                 .travelMode(Routing.TravelMode.DRIVING)
@@ -408,6 +463,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .waypoints(start, end)
                 .alternativeRoutes(true)
                 .build();
+
         routing.execute();
 
     }
@@ -443,24 +499,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             map.moveCamera(myLocation);
             map.animateCamera(zoom);
 
-
-            //      Log.d("location", String.valueOf(latitude));
-            //      Log.d("location", String.valueOf(longitude));
-
-
         } else {
             Log.d(TAG, "(Couldn't get the location");
         }
     }
 
-    private double calculatePaymentInTL(int distanceValue) {
+    private int calculatePaymentInTL(int distanceValue) {
 
         int kilometers = distanceValue / 1000;
         int meters = distanceValue - kilometers * 1000;
 
-        payment = 3.45 + (distanceValue * 2.10) + (meters * 0.0021);
+        payment = (3.45 + (kilometers * 2.10) + (meters * 0.0021));
 
-        return payment;
+        int returnVal = ((int) payment);
+
+        return returnVal;
 
     }
 
@@ -512,8 +565,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         allRoutes = new ArrayList<Route>(route);
 
-
-        Toast.makeText(getApplicationContext(), "Route " + (whichRoute + 1) + ": distance - " + route.get(whichRoute).getDistanceValue() + ": duration - " + route.get(whichRoute).getDurationValue(), Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(), "Route " + (whichRoute + 1) + ": distance - " + route.get(whichRoute).getDistanceValue() + ": duration - " + route.get(whichRoute).getDurationValue(), Toast.LENGTH_LONG).show();
 
         double result = calculatePaymentInTL(route.get(whichRoute).getDistanceValue());
 
@@ -532,7 +584,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onConnected(@Nullable Bundle bundle) {
 
         displayLocation();
-
 
     }
 

@@ -20,8 +20,11 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:background="@drawable/autocomplete_textview"
+            android:hint="Başlangıç Noktası"
+            android:imeOptions="actionNext"
             android:paddingLeft="12dp"
             android:singleLine="true"
+
             android:textColor="@color/black" />
 
         <ImageButton
@@ -47,8 +50,11 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:background="@drawable/autocomplete_textview"
+            android:completionHintView="@drawable/bottom_bar_line"
+            android:imeOptions="actionNext"
             android:paddingLeft="12dp"
             android:singleLine="true"
+
             android:textColor="@color/black" />
 
         <ImageButton
@@ -95,6 +101,8 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
             android:layout_marginTop="240dp"
             android:orientation="horizontal"
             android:paddingBottom="5dp"
@@ -119,7 +127,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="0.5"
-                    android:src="@drawable/route_img" />
+                    android:src="@drawable/selected_route" />
 
             </LinearLayout>
 
@@ -141,7 +149,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="0.5"
-                    android:src="@drawable/route_img" />
+                    android:src="@drawable/selected_route" />
 
             </LinearLayout>
 
@@ -163,7 +171,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="0.5"
-                    android:src="@drawable/route_img" />
+                    android:src="@drawable/selected_route" />
 
             </LinearLayout>
 
@@ -184,12 +192,9 @@
         <ImageView
             android:layout_width="20dp"
             android:layout_height="20dp"
-
             android:layout_centerHorizontal="true"
             android:layout_margin="10dp"
-
             android:layout_weight="1"
-
             android:src="@drawable/start_icon" />
 
         <ImageView
@@ -235,6 +240,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
+
             android:orientation="vertical">
 
             <ImageView
@@ -245,9 +251,16 @@
                 android:src="@drawable/payment_img" />
 
             <TextView
+                android:id="@+id/estimated_payment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="0.5" />
+                android:layout_weight="0.5"
+                android:fontFamily="Arial Rounded MT Bold"
+                android:gravity="center"
+                android:paddingBottom="5dp"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
 
         </LinearLayout>
@@ -272,9 +285,15 @@
                 android:src="@drawable/flag_img" />
 
             <TextView
+                android:id="@+id/distance"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="0.5" />
+                android:layout_weight="0.5"
+                android:gravity="center"
+                android:paddingBottom="5dp"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
 
         </LinearLayout>
@@ -299,9 +318,15 @@
                 android:src="@drawable/time_img" />
 
             <TextView
+                android:id="@+id/estimated_time"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="0.5" />
+                android:layout_weight="0.5"
+                android:gravity="center"
+                android:paddingBottom="5dp"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
 
         </LinearLayout>
